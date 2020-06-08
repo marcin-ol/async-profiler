@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <classfile_constants.h>
 #include "frameName.h"
 #include "vmStructs.h"
 
@@ -123,6 +124,7 @@ const char* FrameName::cppDemangle(const char* name) {
 
 char* FrameName::javaMethodName(jmethodID method) {
     jclass method_class;
+    jint method_modifiers = 0;
     char* class_name = NULL;
     char* method_name = NULL;
     char* method_sig = NULL;
@@ -133,13 +135,19 @@ char* FrameName::javaMethodName(jmethodID method) {
 
     if ((err = jvmti->GetMethodName(method, &method_name, &method_sig, NULL)) == 0 &&
         (err = jvmti->GetMethodDeclaringClass(method, &method_class)) == 0 &&
-        (err = jvmti->GetClassSignature(method_class, &class_name, NULL)) == 0) {
+        (err = jvmti->GetClassSignature(method_class, &class_name, NULL)) == 0 &&
+        (err = jvmti->GetMethodModifiers(method, &method_modifiers)) == 0) {
         // Trim 'L' and ';' off the class descriptor like 'Ljava/lang/Object;'
         result = javaClassName(class_name + 1, strlen(class_name) - 2, _style);
         strcat(result, ".");
         strcat(result, method_name);
+
         if (_style & STYLE_SIGNATURES) strcat(result, truncate(method_sig, 255));
-        if (_style & STYLE_ANNOTATE) strcat(result, "_[j]");
+        if (_style & STYLE_ANNOTATE) {
+            strcat(result, "_[j]");
+            if (method_modifiers & JVM_ACC_STATIC)
+                strcat(result, "_[s]");
+        }
     } else {
         snprintf(_buf, sizeof(_buf) - 1, "[jvmtiError %d]", err);
         result = _buf;

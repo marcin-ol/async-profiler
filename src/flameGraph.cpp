@@ -31,6 +31,7 @@
 #include <iomanip>
 #include <vector>
 #include <algorithm>
+#include <cstring>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -739,16 +740,26 @@ bool FlameGraph::printTreeFrame(std::ostream& out, const Trie& f, int depth) {
 
 const Palette& FlameGraph::selectFramePalette(std::string& name) {
     static const Palette
-        green ("green",  0x50e150, 30, 30, 30),
-        aqua  ("aqua",   0x50bebe, 30, 30, 30),
-        brown ("brown",  0xe17d00, 30, 30,  0),
-        yellow("yellow", 0xc8c83c, 30, 30, 10),
-        red   ("red",    0xe15a5a, 30, 40, 40);
+        green       ("green",       0x50e150, 30, 30, 30),
+        dark_green  ("dark_green",  0x00ba00, 30, 30, 30),
+        aqua        ("aqua",        0x50bebe, 30, 30, 30),
+        brown       ("brown",       0xe17d00, 30, 30, 0),
+        yellow      ("yellow",      0xc8c83c, 30, 30, 10),
+        red         ("red",         0xe15a5a, 30, 40, 40);
 
-    if (StringUtils::endsWith(name, "_[j]", 4)) {
+    static const char *java_function_suffix = "_[j]";
+    static const char *static_java_function_suffix = "_[j]_[s]";
+    static const int java_function_suffix_len = std::strlen(java_function_suffix);
+    static const int static_java_function_suffix_len = std::strlen(static_java_function_suffix);
+
+    if (StringUtils::endsWith(name, java_function_suffix, java_function_suffix_len)) {
         // Java compiled frame
-        name = name.substr(0, name.length() - 4);
+        name = name.substr(0, name.length() - java_function_suffix_len);
         return green;
+    } else if (StringUtils::endsWith(name, static_java_function_suffix, static_java_function_suffix_len)) {
+        // Static java compiled frame
+        name = name.substr(0, name.length() - static_java_function_suffix_len);
+        return dark_green;
     } else if (StringUtils::endsWith(name, "_[i]", 4)) {
         // Java inlined frame
         name = name.substr(0, name.length() - 4);
