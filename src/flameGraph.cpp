@@ -16,6 +16,8 @@
 
 #include <algorithm>
 #include <vector>
+#include <cstring>
+#include <math.h>
 #include <stdio.h>
 #include "flameGraph.h"
 
@@ -77,6 +79,7 @@ static const char FLAMEGRAPH_HEADER[] =
     "\t\t[0xe17d00, 30, 30,  0],\n"
     "\t\t[0xc8c83c, 30, 30, 10],\n"
     "\t\t[0xe15a5a, 30, 40, 40],\n"
+    "\t\t[0x00ba00, 30, 30, 30],\n"
     "\t];\n"
     "\n"
     "\tfunction getColor(p) {\n"
@@ -551,10 +554,19 @@ void FlameGraph::printTreeFrame(std::ostream& out, const Trie& f, int level) {
 }
 
 int FlameGraph::frameType(std::string& name) {
-    if (StringUtils::endsWith(name, "_[j]", 4)) {
+    static const char *java_function_suffix = "_[j]";
+    static const char *static_java_function_suffix = "_[j]_[s]";
+    static const int java_function_suffix_len = std::strlen(java_function_suffix);
+    static const int static_java_function_suffix_len = std::strlen(static_java_function_suffix);
+
+    if (StringUtils::endsWith(name, java_function_suffix, java_function_suffix_len)) {
         // Java compiled frame
-        name = name.substr(0, name.length() - 4);
+        name = name.substr(0, name.length() - java_function_suffix_len);
         return 0;
+    } else if (StringUtils::endsWith(name, static_java_function_suffix, static_java_function_suffix_len)) {
+        // Static java compiled frame
+        name = name.substr(0, name.length() - static_java_function_suffix_len);
+        return 5;
     } else if (StringUtils::endsWith(name, "_[i]", 4)) {
         // Java inlined frame
         name = name.substr(0, name.length() - 4);

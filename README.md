@@ -363,7 +363,7 @@ The following is a complete list of the command-line options accepted by
 
 * `-g` - print method signatures.
 
-* `-a` - annotate Java method names by adding `_[j]` suffix.
+* `-a` - annotate Java method names by adding `_[j]` suffix and `_[s]` on static java methods.
 
 * `-o fmt` - specifies what information to dump when profiling ends.
   `fmt` can be one of the following options:
