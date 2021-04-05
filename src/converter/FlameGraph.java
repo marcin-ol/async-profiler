@@ -269,6 +269,7 @@ public class FlameGraph {
             "\t\t[0xe17d00, 30, 30,  0],\n" +
             "\t\t[0xc8c83c, 30, 30, 10],\n" +
             "\t\t[0xe15a5a, 30, 40, 40],\n" +
+            "\t\t[0x11ba12, 30, 10, 30],\n" +
             "\t];\n" +
             "\n" +
             "\tfunction getColor(p) {\n" +
