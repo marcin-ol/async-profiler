@@ -1446,7 +1446,6 @@ Error Profiler::runInternal(Arguments& args, std::ostream& out) {
             if (error) {
                 return error;
             }
-            out << "Profiling started\n";
             break;
         }
         case ACTION_STOP: {
