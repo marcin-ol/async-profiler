@@ -87,7 +87,7 @@ build/$(LIB_PROFILER_SO): $(SOURCES) $(HEADERS) $(JAVA_HEADERS)
 	$(CXX) $(CXXFLAGS) -DPROFILER_VERSION=\"$(PROFILER_VERSION)\" $(INCLUDES) -fPIC -shared -static-libstdc++ -o $@ $(SOURCES) $(LIBS)
 
 build/$(JATTACH): src/jattach/jattach.c
-	$(CC) $(CFLAGS) -DJATTACH_VERSION=\"$(PROFILER_VERSION)-ap\" -o $@ $^
+	$(CC) $(CFLAGS) -static -DJATTACH_VERSION=\"$(PROFILER_VERSION)-ap\" -o $@ $^
 
 build/$(API_JAR): $(API_SOURCES)
 	mkdir -p build/api
