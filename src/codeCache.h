@@ -19,6 +19,7 @@
 
 #include <jvmti.h>
 
+#include "linearAllocator.h"
 
 #define NO_MIN_ADDRESS  ((const void*)-1)
 #define NO_MAX_ADDRESS  ((const void*)0)
@@ -91,6 +92,7 @@ class NativeCodeCache : public CodeCache {
   private:
     char* _name;
     short _lib_index;
+    char *_build_id;
 
     static char* encodeLibrarySymbol(const char* name, short lib_index);
 
@@ -116,10 +118,11 @@ class NativeCodeCache : public CodeCache {
 
     void add(const void* start, int length, const char* name, bool update_bounds = false);
     void sort();
-    const char* binarySearch(const void* address);
+    const char* binarySearch(const void* address, LinearAllocator* allocator, bool _add_build_ids);
     const void* findSymbol(const char* name);
     const void* findSymbolByPrefix(const char* prefix);
     const void* findSymbolByPrefix(const char* prefix, int prefix_len);
+    void setBuildId(const char* build_id, int build_id_len);
 };
 
 #endif // _CODECACHE_H
