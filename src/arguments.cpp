@@ -343,6 +343,9 @@ Error Arguments::parse(const char* args) {
             CASE("reverse")
                 _reverse = true;
 
+            CASE("buildids")
+                _build_ids = true;
+
             DEFAULT()
                 if (_unknown_arg == NULL) _unknown_arg = arg;
         }
