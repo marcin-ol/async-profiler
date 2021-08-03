@@ -169,6 +169,7 @@ class Arguments {
     const char* _title;
     double _minwidth;
     bool _reverse;
+    bool _build_ids;
 
     Arguments(bool persistent = false) :
         _buf(NULL),
@@ -210,7 +211,8 @@ class Arguments {
         _end(NULL),
         _title(NULL),
         _minwidth(0),
-        _reverse(false) {
+        _reverse(false),
+        _build_ids(false) {
     }
 
     ~Arguments();
