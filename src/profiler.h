@@ -100,6 +100,7 @@ class Profiler {
     bool _add_sched_frame;
     bool _update_thread_names;
     volatile jvmtiEventMode _thread_events_state;
+    bool _add_build_ids;
 
     SpinLock _stubs_lock;
     CodeCache _runtime_stubs;
