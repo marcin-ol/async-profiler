@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <cassert>
 #include "codeCache.h"
 #include "dwarf.h"
 
@@ -44,6 +45,7 @@ CodeCache::CodeCache(const char* name, short lib_index, const void* min_address,
 
     _dwarf_table = NULL;
     _dwarf_table_length = 0;
+    _build_id = NULL;
 
     _capacity = INITIAL_CODE_CACHE_CAPACITY;
     _count = 0;
@@ -57,6 +59,7 @@ CodeCache::~CodeCache() {
     NativeFunc::destroy(_name);
     delete[] _blobs;
     free(_dwarf_table);
+    free(_build_id);
 }
 
 void CodeCache::expand() {
@@ -124,7 +127,18 @@ CodeBlob* CodeCache::find(const void* address) {
     return NULL;
 }
 
-const char* CodeCache::binarySearch(const void* address) {
+void CodeCache::setBuildId(const char* build_id, int build_id_len) {
+    _build_id = (char*)malloc(build_id_len * 2 + 1);
+    if (_build_id) {
+        char *p = _build_id;
+        for (int i = 0; i < build_id_len; i++) {
+            p += sprintf(p, "%02hhx", build_id[i]);
+        }
+        // sprintf has null-terminated it for us
+    }
+}
+
+const char* CodeCache::binarySearch(const void* address, LinearAllocator* allocator, bool _add_build_ids) {
     int low = 0;
     int high = _count - 1;
 
@@ -143,6 +157,19 @@ const char* CodeCache::binarySearch(const void* address) {
     // Also, in some cases (endless loop) the return address may point beyond the function.
     if (low > 0 && (_blobs[low - 1]._start == _blobs[low - 1]._end || _blobs[low - 1]._end == address)) {
         return _blobs[low - 1]._name;
+    }
+
+    if (_add_build_ids && _build_id) {
+        char buf[512];
+        // add 1 for the null terminator
+        const int n = 1 + snprintf(buf, sizeof(buf), "%s %s+%p_[bid]", _name, _build_id, (void*)((char*)address - (char*)_min_address));
+        char *allocated;
+        // if snprintf didn't overflow, and we manage to allocate a suitable buffer (from the LinearAllocator, not malloc,
+        // since this is signal context and malloc can deadlock) - then use them.
+        if (n < sizeof(buf) && (allocated = (char*)allocator->alloc(n)) != NULL) {
+            memcpy(allocated, buf, n);
+            return allocated;
+        }
     }
     return _name;
 }
