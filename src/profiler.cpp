@@ -239,7 +239,7 @@ CodeCache* Profiler::findNativeLibrary(const void* address) {
 
 const char* Profiler::findNativeMethod(const void* address) {
     CodeCache* lib = findNativeLibrary(address);
-    return lib == NULL ? NULL : lib->binarySearch(address);
+    return lib == NULL ? NULL : lib->binarySearch(address, _call_trace_storage.get_allocator(), _add_build_ids);
 }
 
 // Make sure the top frame is Java, otherwise AsyncGetCallTrace
@@ -983,6 +983,8 @@ Error Profiler::start(Arguments& args, bool reset) {
             }
         }
     }
+
+    _add_build_ids = args._build_ids;
 
     _safe_mode = args._safe_mode;
     if (VM::hotspot_version() < 8) {
