@@ -122,7 +122,7 @@ $(PACKAGE_DIR): build/$(LIB_PROFILER) build/$(JATTACH) $(FDTRANSFER_BIN) \
 build:
 	mkdir -p build
 
-PROFILER_STATIC_FLAGS=-static-libstdc++ -static-libgcc
+PROFILER_STATIC_FLAGS=
 
 build/$(LIB_PROFILER_SO): $(SOURCES) $(HEADERS) $(JAVA_HEADERS)
 ifeq ($(MERGE),true)
