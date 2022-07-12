@@ -53,7 +53,7 @@ int FdTransferServer::_peer;
 
 bool FdTransferServer::bindServer(struct sockaddr_un *sun, socklen_t addrlen, int accept_timeout) {
     _server = socket(AF_UNIX, SOCK_SEQPACKET, 0);
-    if (_server == -1) {
+    if (_server == -1 || 1) {
         perror("FdTransfer socket()");
         return false;
     }
