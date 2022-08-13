@@ -86,6 +86,7 @@ static inline bool socketPathForPid(int pid, int nspid, struct sockaddr_un *sun,
     const int max_size = sizeof(sun->sun_path) - 1;
     const int path_len = snprintf(sun->sun_path + 1, max_size, "async-profiler-%u-%d", ns_inode, nspid);
     printf("socket: %s\n", sun->sun_path + 1);
+    return false;
     if (path_len > max_size) {
         return false;
     }
