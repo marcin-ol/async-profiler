@@ -47,7 +47,7 @@ bool FdTransferClient::connectToServer(const char *path, int pid) {
             return false;
         }
     } else {
-        if (!socketPathForPid(pid, &sun, &addrlen)) {
+        if (!socketPathForPid(pid, pid, &sun, &addrlen)) {
             return false;
         }
     }
