@@ -245,8 +245,7 @@ const char* Profiler::getLibraryName(const char* native_symbol) {
     if (lib_index >= 0 && lib_index < _native_libs.count()) {
         const char* s = _native_libs[lib_index]->name();
         if (s != NULL) {
-            const char* p = strrchr(s, '/');
-            return p != NULL ? p + 1 : s;
+            return s;
         }
     }
     return NULL;
@@ -262,8 +261,7 @@ CodeCache* Profiler::findLibraryByName(const char* lib_name) {
     for (int i = 0; i < native_lib_count; i++) {
         const char* s = _native_libs[i]->name();
         if (s != NULL) {
-            const char* p = strrchr(s, '/');
-            if (p != NULL && strncmp(p + 1, lib_name, lib_name_len) == 0) {
+            if (strncmp(s, lib_name, lib_name_len) == 0) {
                 return _native_libs[i];
             }
         }
