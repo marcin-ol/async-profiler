@@ -20,6 +20,7 @@
 #include <string.h>
 #include "frameName.h"
 #include "profiler.h"
+#include "stringUtils.h"
 #include "vmStructs.h"
 
 
@@ -135,6 +136,9 @@ char* FrameName::truncate(char* name, int max_length) {
 
 const char* FrameName::decodeNativeSymbol(const char* name) {
     const char* lib_name = (_style & STYLE_LIB_NAMES) ? Profiler::instance()->getLibraryName(name) : NULL;
+    bool report_lib_name_from_symbol = lib_name == NULL && strcmp(name, "call_stub") != 0 &&
+        !StringUtils::endsWith(name, "_[k]", 4) &&
+        Profiler::instance()->findLibraryByName(name) != NULL;
 
     if (name[0] == '_' && name[1] == 'Z') {
         int status;
@@ -152,6 +156,13 @@ const char* FrameName::decodeNativeSymbol(const char* name) {
 
     if (lib_name != NULL) {
         snprintf(_buf, sizeof(_buf) - 1, "%s (%s)", name, lib_name);
+        return _buf;
+    } else if (report_lib_name_from_symbol) {
+        if (_style & STYLE_LIB_NAMES) {
+            snprintf(_buf, sizeof(_buf) - 1, "[unknown] (%s)", name);
+        } else {
+            snprintf(_buf, sizeof(_buf) - 1, "(%s)", name);
+        }
         return _buf;
     } else {
         return name;
