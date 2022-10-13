@@ -158,11 +158,7 @@ const char* FrameName::decodeNativeSymbol(const char* name) {
         snprintf(_buf, sizeof(_buf) - 1, "%s (%s)", name, lib_name);
         return _buf;
     } else if (report_lib_name_from_symbol) {
-        if (_style & STYLE_LIB_NAMES) {
-            snprintf(_buf, sizeof(_buf) - 1, "[unknown] (%s)", name);
-        } else {
-            snprintf(_buf, sizeof(_buf) - 1, "(%s)", name);
-        }
+        snprintf(_buf, sizeof(_buf) - 1, "(%s)", name);
         return _buf;
     } else {
         return name;
