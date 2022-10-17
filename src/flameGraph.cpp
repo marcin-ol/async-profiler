@@ -20,7 +20,6 @@
 #include <string.h>
 #include "flameGraph.h"
 #include "incbin.h"
-#include "stringUtils.h"
 #include "vmEntry.h"
 
 
@@ -29,6 +28,21 @@ const int MAX_CANVAS_HEIGHT = 32767;
 
 INCBIN(FLAMEGRAPH_TEMPLATE, "flame.html")
 INCBIN(TREE_TEMPLATE, "tree.html")
+
+
+class StringUtils {
+  public:
+    static bool endsWith(const std::string& s, const char* suffix, size_t suffixlen) {
+        size_t len = s.length();
+        return len >= suffixlen && s.compare(len - suffixlen, suffixlen, suffix) == 0; 
+    }
+
+    static void replace(std::string& s, char c, const char* replacement, size_t rlen) {
+        for (size_t i = 0; (i = s.find(c, i)) != std::string::npos; i += rlen) {
+            s.replace(i, 1, replacement, rlen);
+        }
+    }
+};
 
 
 class Format {

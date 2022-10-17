@@ -20,7 +20,6 @@
 #include <string.h>
 #include "frameName.h"
 #include "profiler.h"
-#include "stringUtils.h"
 #include "vmStructs.h"
 
 
@@ -28,6 +27,10 @@ static inline bool isDigit(char c) {
     return c >= '0' && c <= '9';
 }
 
+static bool endsWith(const std::string& s, const char* suffix, size_t suffixlen) {
+    size_t len = s.length();
+    return len >= suffixlen && s.compare(len - suffixlen, suffixlen, suffix) == 0;
+}
 
 Matcher::Matcher(const char* pattern) {
     if (pattern[0] == '*') {
@@ -136,9 +139,14 @@ char* FrameName::truncate(char* name, int max_length) {
 
 const char* FrameName::decodeNativeSymbol(const char* name) {
     const char* lib_name = (_style & STYLE_LIB_NAMES) ? Profiler::instance()->getLibraryName(name) : NULL;
-    bool report_lib_name_from_symbol = lib_name == NULL && strcmp(name, "call_stub") != 0 &&
-        !StringUtils::endsWith(name, "_[k]", 4) &&
-        Profiler::instance()->findLibraryByName(name) != NULL;
+    bool report_lib_name_from_symbol = false;
+    if (lib_name == NULL && strcmp(name, "call_stub") != 0 &&
+            !endsWith(name, "_[k]", 4)) {
+        if (Profiler::instance()->findLibraryByName(name) != NULL) {
+            lib_name = name;
+            report_lib_name_from_symbol = true;
+        }
+    }
 
     if (name[0] == '_' && name[1] == 'Z') {
         int status;
@@ -154,11 +162,11 @@ const char* FrameName::decodeNativeSymbol(const char* name) {
         }
     }
 
-    if (lib_name != NULL) {
-        snprintf(_buf, sizeof(_buf) - 1, "%s (%s)", name, lib_name);
+    if (report_lib_name_from_symbol) {
+        snprintf(_buf, sizeof(_buf) - 1, "(%s)", lib_name);
         return _buf;
-    } else if (report_lib_name_from_symbol) {
-        snprintf(_buf, sizeof(_buf) - 1, "(%s)", name);
+    } else if (lib_name != NULL) {
+        snprintf(_buf, sizeof(_buf) - 1, "%s (%s)", name, lib_name);
         return _buf;
     } else {
         return name;
