@@ -140,8 +140,7 @@ char* FrameName::truncate(char* name, int max_length) {
 const char* FrameName::decodeNativeSymbol(const char* name) {
     const char* lib_name = (_style & STYLE_LIB_NAMES) ? Profiler::instance()->getLibraryName(name) : NULL;
     bool report_lib_name_from_symbol = false;
-    if (lib_name == NULL && strcmp(name, "call_stub") != 0 &&
-            !endsWith(name, "_[k]", 4)) {
+    if (lib_name == NULL && !endsWith(name, "_[k]", 4)) {
         if (Profiler::instance()->findLibraryByName(name) != NULL) {
             lib_name = name;
             report_lib_name_from_symbol = true;
