@@ -21,7 +21,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <algorithm>
 #include <string.h>
 #include <sys/param.h>
 #include "profiler.h"
@@ -1258,8 +1257,7 @@ void Profiler::dumpCollapsed(std::ostream& out, Arguments& args) {
         if (counter == 0) continue;
 
         for (int j = trace->num_frames - 1; j >= 0; j--) {
-            std::string frame_name = fn.name(trace->frames[j]);
-            std::replace(frame_name.begin(), frame_name.end(), ';', '|');
+            const char* frame_name = fn.name(trace->frames[j]);
             out << frame_name << (j == 0 ? ' ' : ';');
         }
         // Beware of locale-sensitive conversion
