@@ -205,6 +205,7 @@ class String {
 
 
 static String action = "collect";
+static const String empty;
 static String file, logfile, output, params, format, fdtransfer, libpath;
 static bool use_tmp_file = false;
 static int duration = 60;
@@ -474,6 +475,9 @@ int main(int argc, const char** argv) {
             // The last argument is the application name as it would appear in the jps tool
             pid = jps("jps -J-XX:+PerfDisableSharedMem", arg.str());
 
+        } else if (arg == "-L" || arg == "--lib-prefix") {
+            libpath = String(args.next()) << "/libasyncProfiler.so";
+
         } else {
             fprintf(stderr, "Unrecognized option: %s\n", arg.str());
             return 1;
@@ -486,7 +490,9 @@ int main(int argc, const char** argv) {
     }
 
     setup_output_files(pid);
-    setup_lib_path();
+    if (libpath == empty) {
+        setup_lib_path();
+    }
 
     if (action == "collect") {
         run_fdtransfer(pid, fdtransfer);
