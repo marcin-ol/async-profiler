@@ -107,6 +107,7 @@ static const char USAGE_STRING[] =
     "         " APP_BINARY " stop -o flat jps\n"
     "         " APP_BINARY " -d 5 -e alloc MyAppName\n";
 
+static const unsigned int DEFAULT_FDTRANSFER_TIMEOUT = 30;
 
 extern "C" int jattach(int pid, int argc, const char** argv);
 
@@ -227,6 +228,7 @@ static bool use_tmp_file = false;
 static int duration = 60;
 static int pid = 0;
 static volatile unsigned long long end_time;
+static unsigned int timeout = DEFAULT_FDTRANSFER_TIMEOUT;
 
 static void sigint_handler(int sig) {
     end_time = 0;
@@ -331,7 +333,7 @@ static int jps(const char* cmd, const char* app_name = NULL) {
     return pid;
 }
 
-static void run_fdtransfer(int pid, String& fdtransfer) {
+static void run_fdtransfer(int pid, String& fdtransfer, unsigned int timeout) {
     if (!FdTransferServer::supported() || fdtransfer == "") return;
 
     pid_t child = fork();
@@ -340,7 +342,7 @@ static void run_fdtransfer(int pid, String& fdtransfer) {
     }
 
     if (child == 0) {
-        exit(FdTransferServer::runOnce(pid, fdtransfer.str()) ? 0 : 1);
+        exit(FdTransferServer::runOnce(pid, fdtransfer.str(), timeout) ? 0 : 1);
     } else {
         int ret = wait_for_exit(child);
         if (ret != 0) {
@@ -483,7 +485,9 @@ int main(int argc, const char** argv) {
             output = "jfr";
 
         } else if (arg == "--timeout" || arg == "--loop") {
-            params << "," << (arg.str() + 2) << "=" << args.next();
+            const char* value = args.next();
+            params << "," << (arg.str() + 2) << "=" << value;
+            timeout = atoi(value);
             if (action == "collect") action = "start";
 
         } else if (arg == "--fd-path") {
@@ -537,7 +541,7 @@ int main(int argc, const char** argv) {
     }
 
     if (action == "collect") {
-        run_fdtransfer(pid, fdtransfer);
+        run_fdtransfer(pid, fdtransfer, timeout);
         run_jattach(pid, kJattachLoad, String("start,file=") << file << "," << output << format << params << ",log=" << logfile);
 
         fprintf(stderr, "Profiling for %d seconds\n", duration);
@@ -561,7 +565,7 @@ int main(int argc, const char** argv) {
         if (params != kEmpty) {
             fprintf(stderr, "Warning: action fdtransfer was given, these parameters will be ignored: %s\n", params.str());
         }
-        run_fdtransfer(pid, fdtransfer);
+        run_fdtransfer(pid, fdtransfer, timeout);
 
     } else if (action == "jattach") {
         if (jattach_cmd == kEmpty) {
@@ -578,7 +582,7 @@ int main(int argc, const char** argv) {
         run_jattach(pid, kJattachJcmd, jattach_cmd);
 
     } else {
-        if (action == "start" || action == "resume") run_fdtransfer(pid, fdtransfer);
+        if (action == "start" || action == "resume") run_fdtransfer(pid, fdtransfer, timeout);
         run_jattach(pid, kJattachLoad, String(action) << ",file=" << file << "," << output << format << params << ",log=" << logfile);
     }
 
