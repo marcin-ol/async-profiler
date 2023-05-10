@@ -228,7 +228,7 @@ static int duration = 60;
 static int pid = 0;
 static volatile unsigned long long end_time;
 // gprofiler-specific: holds timeout value for fdtransfer command
-static unsigned int timeout = DEFAULT_FDTRANSFER_TIMEOUT;
+static unsigned int fdtransfer_timeout = DEFAULT_FDTRANSFER_TIMEOUT;
 
 static void sigint_handler(int sig) {
     end_time = 0;
@@ -364,7 +364,7 @@ static void run_jattach(int pid, const String& verb, String& cmd) {
         } else if (verb == kJattachJcmd) {
             const char* args[] = {kJattachJcmd.str(), cmd.str()};
             exit(jattach(pid, 2, args));
-        }
+        } else { exit (1); }
     } else {
         int ret = wait_for_exit(child);
         if (ret != 0) {
@@ -479,11 +479,12 @@ int main(int argc, const char** argv) {
             output = "jfr";
 
         } else if (arg == "--timeout" || arg == "--loop") {
-            const char* value = args.next();
-            params << "," << (arg.str() + 2) << "=" << value;
-            // gprofiler-specific: borrow timeout parameter to configure socket timeout for fdtransfer action
-            timeout = atoi(value);
+            params << "," << (arg.str() + 2) << "=" << args.next();
+
             if (action == "collect") action = "start";
+
+        } else if (arg == "--fdtransfer-timeout") {
+            fdtransfer_timeout = atoi(args.next());
 
         } else if (arg == "--fd-path") {
             fdtransfer = String(args.next());
@@ -526,7 +527,8 @@ int main(int argc, const char** argv) {
     if (jattach_cmd == kEmpty) {
         setup_output_files(pid);
     } else if (params != kEmpty) {
-        fprintf(stderr, "Warning: --jattach-cmd was given, these parameters will be ignored: %s\n", params.str());
+        fprintf(stderr, "Argument --jattach-cmd was given, need no other parameters\n");
+        return 1;
     }
 
     if (libpath == kEmpty) {
@@ -556,9 +558,10 @@ int main(int argc, const char** argv) {
         run_jattach(pid, kJattachLoad, String("stop,file=") << file << "," << output << format << ",log=" << logfile);
     } else if (action == "fdtransfer") {
         if (params != kEmpty) {
-            fprintf(stderr, "Warning: action fdtransfer was given, these parameters will be ignored: %s\n", params.str());
+            fprintf(stderr, "Action fdtransfer was given, all parameters are to be passed with --jattach-cmd\n");
+            return 1;
         }
-        run_fdtransfer(pid, fdtransfer, timeout);
+        run_fdtransfer(pid, fdtransfer, fdtransfer_timeout);
 
     } else if (action == "jattach") {
         if (jattach_cmd == kEmpty) {
