@@ -1204,6 +1204,9 @@ Error Profiler::dump(std::ostream& out, Arguments& args) {
     }
 
     if (_state == RUNNING) {
+        if (args._recycle && args._timeout) {
+            recycleTimeoutTimer(args);
+        }
         updateJavaThreadNames();
         updateNativeThreadNames();
     }
@@ -1514,7 +1517,8 @@ void Profiler::stopTimer() {
 
 void Profiler::timerLoop(void* timer_id) {
     u64 current_micros = OS::micros();
-    u64 stop_micros = _stop_time * 1000000ULL;
+    time_t stop_time = _stop_time;
+    u64 stop_micros = stop_time * 1000000ULL;
     u64 sleep_until = _jfr.active() ? current_micros + 1000000 : stop_micros;
 
     while (true) {
@@ -1525,6 +1529,11 @@ void Profiler::timerLoop(void* timer_id) {
                 // timeout not reached
             }
             if (_timer_id != timer_id) return;
+            if (_stop_time != stop_time) {
+                // handle timeout recycling
+                stop_time = _stop_time;
+                stop_micros = stop_time * 1000000ULL;
+            }
         }
 
         if ((current_micros = OS::micros()) >= stop_micros) {
@@ -1544,6 +1553,15 @@ void Profiler::timerLoop(void* timer_id) {
 
 void Profiler::timerThreadEntry(jvmtiEnv* jvmti, JNIEnv* jni, void* arg) {
     instance()->timerLoop(arg);
+}
+
+void Profiler::recycleTimeoutTimer(Arguments& args) {
+    MutexLocker ml(_timer_lock);
+    if (_timer_id != NULL) {
+        time_t current_time = time(NULL);
+        _stop_time = addTimeout(current_time, args._timeout);
+        _timer_lock.notify();
+    }
 }
 
 Error Profiler::runInternal(Arguments& args, std::ostream& out) {
@@ -1589,6 +1607,9 @@ Error Profiler::runInternal(Arguments& args, std::ostream& out) {
             MutexLocker ml(_state_lock);
             if (_state == RUNNING) {
                 out << "Profiling is running for " << uptime() << " seconds\n";
+                if (args._recycle && args._timeout) {
+                    recycleTimeoutTimer(args);
+                }
             } else {
                 out << "Profiler is not active\n";
             }
