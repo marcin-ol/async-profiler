@@ -1234,6 +1234,9 @@ Error Profiler::dump(std::ostream& out, Arguments& args) {
         default:
             return Error("No output format selected");
     }
+    if (args._reset_trace) {
+        resetTrace();
+    }
 
     return Error::OK;
 }
@@ -1553,6 +1556,18 @@ void Profiler::timerLoop(void* timer_id) {
 
 void Profiler::timerThreadEntry(jvmtiEnv* jvmti, JNIEnv* jni, void* arg) {
     instance()->timerLoop(arg);
+}
+
+void Profiler::resetTrace() {
+    // Reset traces for next collection round, to get comparable outcomes from dump.
+    // Must be called under _state_lock mutex
+    _total_samples = 0;
+    memset(_failures, 0, sizeof(_failures));
+
+    // Reset call trace storage
+    lockAll();
+    _call_trace_storage.clear();
+    unlockAll();
 }
 
 void Profiler::recycleTimeoutTimer(Arguments& args) {

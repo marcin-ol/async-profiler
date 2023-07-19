@@ -375,6 +375,9 @@ Error Arguments::parse(const char* args) {
             CASE("recycle")
                 _recycle = true;
 
+            CASE("resettrace")
+                _reset_trace = true;
+
             DEFAULT()
                 if (_unknown_arg == NULL) _unknown_arg = arg;
         }

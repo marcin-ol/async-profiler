@@ -188,6 +188,7 @@ class Arguments {
     // Granulate Extra
     bool _log_meminfo_on_dump;
     bool _recycle;
+    bool _reset_trace;
 
     Arguments(bool persistent = false) :
         _buf(NULL),
@@ -237,7 +238,8 @@ class Arguments {
         _reverse(false),
         _log_meminfo_on_dump(false),
         _includemm(false),
-        _recycle(false) {
+        _recycle(false),
+        _reset_trace(false) {
     }
 
     ~Arguments();
