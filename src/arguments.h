@@ -189,6 +189,7 @@ class Arguments {
     bool _log_meminfo_on_dump;
     bool _recycle;
     bool _reset_trace;
+    bool _dump_active;
 
     Arguments(bool persistent = false) :
         _buf(NULL),
@@ -239,7 +240,8 @@ class Arguments {
         _log_meminfo_on_dump(false),
         _includemm(false),
         _recycle(false),
-        _reset_trace(false) {
+        _reset_trace(false),
+        _dump_active(false) {
     }
 
     ~Arguments();

@@ -1199,7 +1199,8 @@ Error Profiler::flushJfr() {
 
 Error Profiler::dump(std::ostream& out, Arguments& args) {
     MutexLocker ml(_state_lock);
-    if (_state != IDLE && _state != RUNNING) {
+    // in dump-active make sure profiler is not idle
+    if ((_state != IDLE || args._dump_active) && _state != RUNNING) {
         return Error("Profiler has not started");
     }
 

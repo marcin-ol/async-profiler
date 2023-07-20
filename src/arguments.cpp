@@ -378,6 +378,9 @@ Error Arguments::parse(const char* args) {
             CASE("resettrace")
                 _reset_trace = true;
 
+            CASE("dumpactive")
+                _dump_active = true;
+
             DEFAULT()
                 if (_unknown_arg == NULL) _unknown_arg = arg;
         }
