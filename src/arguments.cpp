@@ -372,6 +372,9 @@ Error Arguments::parse(const char* args) {
             CASE("includemm")
                 _includemm = true;
 
+            CASE("includeln")
+                _includeln = true;
+
             CASE("recycle")
                 _recycle = true;
 

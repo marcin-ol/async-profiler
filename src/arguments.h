@@ -167,6 +167,7 @@ class Arguments {
     bool _live;
     bool _fdtransfer;
     bool _includemm;
+    bool _includeln;
     const char* _fdtransfer_path;
     int _style;
     CStack _cstack;
@@ -239,6 +240,7 @@ class Arguments {
         _reverse(false),
         _log_meminfo_on_dump(false),
         _includemm(false),
+        _includeln(false),
         _recycle(false),
         _reset_trace(false),
         _dump_active(false) {
